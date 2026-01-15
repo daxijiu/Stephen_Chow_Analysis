@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>解构周星驰：笑与泪的叙事艺术 | Decoding Stephen Chow</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chosen Palette: Retro Hong Kong Cinema -->
+    <!-- Background: #FFFBEB (Warm Ivory - representing script paper/nostalgia) -->
+    <!-- Text: #1F2937 (Ink Gray) -->
+    <!-- Accents: #DC2626 (Stamp Red - traditional seal/energy), #D97706 (Amber Gold - Shaolin/Dreams) -->
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'chow-bg': '#FFFBEB',
+                        'chow-red': '#DC2626',
+                        'chow-gold': '#D97706',
+                        'chow-ink': '#1F2937',
+                        'chow-paper': '#FEF3C7',
+                        'chow-muted': '#9CA3AF',
+                    },
+                    fontFamily: {
+                        'sans': ['Helvetica Neue', 'Arial', 'Microsoft YaHei', 'sans-serif'],
+                        'serif': ['Georgia', 'Times New Roman', 'KaiTi', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FFFBEB;
+            color: #1F2937;
+        }
+        .section-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .section-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #D97706;
+        }
+        /* Chart Container Styling - Mandatory Strictness */
+        .chart-container {
+            position: relative;
+            margin: auto;
+            width: 100%;
+            max-width: 600px; /* Constrain width on large screens */
+            height: 350px; /* Base height */
+            max-height: 400px;
+        }
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .nav-active {
+            color: #DC2626;
+            font-weight: bold;
+            border-bottom: 2px solid #DC2626;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFFBEB;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D97706;
+            border-radius: 4px;
+        }
+        .quote-mark {
+            font-family: 'Times New Roman', serif;
+            font-size: 4rem;
+            line-height: 1rem;
+            color: #FECACA;
+            opacity: 0.5;
+        }
+    </style>
+    
+    <!-- Application Structure Plan:
+         The app is designed as a "Director's Notebook" or a "Film Study Lab".
+         1. **Header**: Establishes the "Tragedy in Comedy" thesis immediately.
+         2. **Navigation**: Quick jumps to the four pillars of analysis (Narrative, Character, Style, Creation).
+         3. **Narrative Logic (The Curve)**: Uses a Line Chart to visualize the emotional rollercoaster of a Chow protagonist. This is crucial because his stories follow a very specific "Fall and Rise" pattern.
+         4. **Character Ecosystem (The Grid)**: An interactive grid filtering the archetypes (Loser, Goddess, Grotesque Sidekick). This allows users to explore the specific functions of his dramatis personae.
+         5. **Style DNA (The Radar)**: A Radar chart to break down the "Mo Lei Tau" elements. Users can toggle definitions to understand the mix of absurdity and sadness.
+         6. **Creator's Lab (The How-To)**: Actionable steps for the user (as requested) on how to start writing such stories, presented as an interactive checklist/process.
+         7. **Footer**: Simple attribution.
+         
+         The structure moves from Abstract (Theory) -> Concrete (Characters) -> Analysis (Style) -> Action (How to Write), guiding the user from understanding to creating.
+    -->
+    
+    <!-- Visualization & Content Choices:
+         - **Line Chart (Narrative)**: Selected to show the *change* in status and sympathy over time. It visually proves the "U-shaped" narrative (Hubris -> Rock Bottom -> Enlightenment).
+         - **Radar Chart (Style)**: Selected to show the *balance* of conflicting elements (e.g., Tragedy vs. Comedy). It visually represents the "Bittersweet" flavor.
+         - **Interactive Grid (Characters)**: Allows for density of information without clutter. Clicking reveals the "Narrative Function," teaching the user *why* that character exists.
+         - **Text Steppers (Creation)**: Breaks down complex advice into digestible steps.
+         - **NO SVG/Mermaid**: All icons are Unicode or CSS shapes. Charts are Canvas (Chart.js).
+    -->
+    
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="font-sans antialiased selection:bg-chow-red selection:text-white pb-20">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="text-2xl font-serif font-bold text-chow-ink tracking-tighter border-2 border-chow-red px-2 py-1 rounded-sm">
+                        <span class="text-chow-red">星</span> · 研习社
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <button onclick="navTo('narrative')" id="btn-narrative" class="nav-item text-gray-600 hover:text-chow-red px-3 py-2 text-sm font-medium transition-colors">叙事曲线</button>
+                    <button onclick="navTo('characters')" id="btn-characters" class="nav-item text-gray-600 hover:text-chow-red px-3 py-2 text-sm font-medium transition-colors">角色图谱</button>
+                    <button onclick="navTo('style')" id="btn-style" class="nav-item text-gray-600 hover:text-chow-red px-3 py-2 text-sm font-medium transition-colors">风格DNA</button>
+                    <button onclick="navTo('creation')" id="btn-creation" class="nav-item bg-chow-red text-white hover:bg-red-700 px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-md">创作指南</button>
+                </div>
+                <!-- Mobile Menu Button (Simplified for this demo) -->
+                <div class="md:hidden flex items-center">
+                    <button onclick="navTo('narrative')" class="text-chow-red font-bold text-sm">开始探索</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative bg-chow-bg pt-16 pb-12 overflow-hidden">
+        <div class="max-w-4xl mx-auto px-4 text-center z-10 relative">
+            <span class="inline-block py-1 px-3 rounded-full bg-orange-100 text-chow-gold text-xs font-bold tracking-widest uppercase mb-4 border border-orange-200">Interactive Analysis</span>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-chow-ink mb-6 leading-tight">
+                解构<span class="text-chow-red relative inline-block">周星驰<span class="absolute bottom-0 left-0 w-full h-2 bg-chow-gold opacity-30 -z-10"></span></span>：<br>
+                <span class="text-2xl md:text-4xl font-serif font-normal text-gray-600">笑话背后的残酷童话</span>
+            </h1>
+            <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                我们要探讨的不是单纯的无厘头，而是一个关于<strong>“尊严”</strong>的系统性工程。本页面将带您拆解周星驰电影的底层叙事逻辑、角色原型与情感曲线，为您的创作提供蓝图。
+            </p>
+            <div class="flex justify-center gap-4">
+                <button onclick="navTo('narrative')" class="bg-chow-ink text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition shadow-lg transform hover:-translate-y-1">开始解构 ↓</button>
+            </div>
+        </div>
+        <!-- Decorative Background Elements (CSS only) -->
+        <div class="absolute top-0 left-0 w-32 h-32 bg-red-50 rounded-full blur-3xl opacity-50 -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-64 h-64 bg-yellow-50 rounded-full blur-3xl opacity-50 translate-x-1/2 translate-y-1/2"></div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24 py-12">
+
+        <!-- SECTION 1: NARRATIVE LOGIC -->
+        <section id="narrative" class="scroll-mt-24">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <div class="lg:col-span-4">
+                    <h2 class="text-3xl font-bold text-chow-ink mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-chow-red text-white rounded flex items-center justify-center text-sm mr-3 font-serif">壹</span>
+                        叙事逻辑：U型救赎
+                    </h2>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        周星驰电影的核心是<strong>“幻灭与重生”</strong>。不同于普通喜剧的轻微波折，他会将主角从（往往是虚假的）高位彻底打入尘埃，经历人格的粉碎，最后通过回归初心获得超现实的救赎。
+                    </p>
+                    <div class="bg-white p-5 rounded-lg border-l-4 border-chow-gold shadow-sm">
+                        <h3 class="font-bold text-chow-ink mb-2">关键公式：</h3>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li class="flex items-start"><span class="text-chow-red mr-2">●</span> <strong>错位 (Hubris):</strong> 主角往往自命不凡却能力低微。</li>
+                            <li class="flex items-start"><span class="text-chow-red mr-2">●</span> <strong>毁灭 (Destruction):</strong> 被残酷现实无情羞辱，尊严归零。</li>
+                            <li class="flex items-start"><span class="text-chow-red mr-2">●</span> <strong>觉醒 (Enlightenment):</strong> 放弃世俗成功，拥抱纯真或真爱。</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="lg:col-span-8 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-800">小人物的情感/地位曲线</h3>
+                        <select id="movieSelect" class="text-sm border-gray-300 border rounded-md px-2 py-1 focus:ring-chow-gold focus:border-chow-gold outline-none" onchange="updateNarrativeChart()">
+                            <option value="kungfu">模型：功夫 (Kung Fu Hustle)</option>
+                            <option value="godcook">模型：食神 (God of Cookery)</option>
+                            <option value="king">模型：喜剧之王 (King of Comedy)</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="narrativeChart"></canvas>
+                    </div>
+                    <p class="mt-4 text-xs text-center text-gray-500 italic">点击图表上的节点查看具体情节分析</p>
+                    <div id="narrative-detail" class="mt-4 p-4 bg-gray-50 rounded border border-gray-200 text-sm hidden transition-all duration-300">
+                        <strong id="detail-title" class="block text-chow-red mb-1"></strong>
+                        <span id="detail-text" class="text-gray-700"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: CHARACTER ARCHETYPES -->
+        <section id="characters" class="scroll-mt-24">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <h2 class="text-3xl font-bold text-chow-ink mb-4 flex items-center justify-center">
+                    <span class="w-8 h-8 bg-chow-red text-white rounded flex items-center justify-center text-sm mr-3 font-serif">贰</span>
+                    角色图谱：审丑与纯真
+                </h2>
+                <p class="text-gray-600">
+                    如果你想创作周星驰式的角色，记住两个词：<strong>“极致”</strong>与<strong>“反差”</strong>。美女必须扮丑，高手必须像乞丐，主角必须像烂泥。
+                </p>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-3 mb-8">
+                <button onclick="filterChars('all')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-chow-ink text-white shadow-md transition-transform hover:scale-105">全部角色</button>
+                <button onclick="filterChars('protagonist')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 transition-transform hover:scale-105">主角变体</button>
+                <button onclick="filterChars('female')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 transition-transform hover:scale-105">女性符号</button>
+                <button onclick="filterChars('sidekick')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 transition-transform hover:scale-105">黄金配角</button>
+            </div>
+
+            <div id="char-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Grid items generated by JS -->
+            </div>
+        </section>
+
+        <!-- SECTION 3: STYLE DNA -->
+        <section id="style" class="scroll-mt-24 bg-chow-paper/50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                
+                <div class="order-2 md:order-1">
+                    <div class="chart-container">
+                        <canvas id="styleChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="order-1 md:order-2">
+                    <h2 class="text-3xl font-bold text-chow-ink mb-6 flex items-center">
+                        <span class="w-8 h-8 bg-chow-red text-white rounded flex items-center justify-center text-sm mr-3 font-serif">叁</span>
+                        风格DNA：解构无厘头
+                    </h2>
+                    <p class="text-gray-700 mb-6">
+                        所谓的“无厘头”（Mo Lei Tau），不仅仅是搞笑，而是一种<strong>后现代的解构</strong>。它通过切断逻辑链条来反抗权威和严肃。要掌握这种风格，必须平衡以下维度：
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="group cursor-pointer p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-chow-gold" onclick="highlightStyle('absurdity')">
+                            <h4 class="font-bold text-gray-800 group-hover:text-chow-gold transition">💥 荒诞断裂 (Absurdity)</h4>
+                            <p class="text-sm text-gray-600 mt-1">
+                                对话或行为完全脱离当前语境。例如：生死关头还在讨论发型。这是为了消解“死亡”或“权威”的压迫感。
+                            </p>
+                        </div>
+                        <div class="group cursor-pointer p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-chow-red" onclick="highlightStyle('tragedy')">
+                            <h4 class="font-bold text-gray-800 group-hover:text-chow-red transition">😢 悲剧内核 (Tragic Core)</h4>
+                            <p class="text-sm text-gray-600 mt-1">
+                                “小时候看是喜剧，长大看是悲剧。”所有笑料都建立在人物真实的痛苦和尴尬之上。
+                            </p>
+                        </div>
+                        <div class="group cursor-pointer p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-gray-800" onclick="highlightStyle('cartoon')">
+                            <h4 class="font-bold text-gray-800 group-hover:text-gray-600 transition">👊 卡通化暴力 (Cartoon Violence)</h4>
+                            <p class="text-sm text-gray-600 mt-1">
+                                像《猫和老鼠》一样的夸张打击感（如：被砸扁、飞上天），让暴力变得可笑而非恐怖。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: CREATION GUIDE -->
+        <section id="creation" class="scroll-mt-24 mb-20">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-chow-ink mb-4 flex items-center justify-center">
+                        <span class="w-8 h-8 bg-chow-red text-white rounded flex items-center justify-center text-sm mr-3 font-serif">肆</span>
+                        创作研究：如何入手？
+                    </h2>
+                    <p class="text-gray-600">
+                        创作周星驰式作品的“行动清单”。不要模仿他的笑声，要模仿他对痛苦的凝视。
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
+                    <div class="flex border-b border-gray-200 overflow-x-auto">
+                        <button class="step-tab flex-1 py-4 text-center font-bold text-chow-red border-b-2 border-chow-red bg-red-50" onclick="showStep(1, this)">STEP 1: 设定执念</button>
+                        <button class="step-tab flex-1 py-4 text-center font-bold text-gray-500 hover:text-gray-700" onclick="showStep(2, this)">STEP 2: 制造炼狱</button>
+                        <button class="step-tab flex-1 py-4 text-center font-bold text-gray-500 hover:text-gray-700" onclick="showStep(3, this)">STEP 3: 错位反应</button>
+                    </div>
+
+                    <div class="p-8 min-h-[300px]">
+                        <!-- Step Content 1 -->
+                        <div id="step-1" class="step-content animate-fade-in">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">第一步：给主角一个不切实际的“执念”</h3>
+                            <p class="text-gray-600 mb-6">
+                                周星驰的主角通常生活在底层，但都有一个巨大的、近乎妄想的目标。这个目标必须神圣不可侵犯，而他的能力又完全不够格。
+                            </p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="bg-chow-bg p-4 rounded border border-gray-200">
+                                    <span class="text-xs font-bold text-chow-muted uppercase">例子 A</span>
+                                    <p class="font-bold mt-1">《少林足球》</p>
+                                    <p class="text-sm text-gray-600">身为捡破烂的，执念是“弘扬少林武功”。</p>
+                                </div>
+                                <div class="bg-chow-bg p-4 rounded border border-gray-200">
+                                    <span class="text-xs font-bold text-chow-muted uppercase">例子 B</span>
+                                    <p class="font-bold mt-1">《喜剧之王》</p>
+                                    <p class="text-sm text-gray-600">身为跑龙套的，执念是“我是一个演员”。</p>
+                                </div>
+                            </div>
+                            <div class="mt-6 p-4 bg-blue-50 text-blue-800 rounded text-sm">
+                                <strong>💡 练习：</strong> 写下一个身份极低（如外卖员、各种打杂），但认为自己是某个领域（如拯救世界、顶级厨师）天才的角色。
+                            </div>
+                        </div>
+
+                        <!-- Step Content 2 -->
+                        <div id="step-2" class="step-content hidden animate-fade-in">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">第二步：建立冷酷的“势利眼”环境</h3>
+                            <p class="text-gray-600 mb-6">
+                                只有环境足够残酷、势利，主角的坚持才显得可笑又可敬。你需要塑造一群以貌取人、唯利是图的配角来不断打击主角。
+                            </p>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700 mb-6">
+                                <li><strong>语言暴力：</strong> 直白的羞辱（“你就像条狗”）。</li>
+                                <li><strong>肢体暴力：</strong> 毫不留情的殴打（如《食神》被十八铜人打）。</li>
+                                <li><strong>环境反差：</strong> 比如在富丽堂皇的酒店里吃路边摊。</li>
+                            </ul>
+                        </div>
+
+                        <!-- Step Content 3 -->
+                        <div id="step-3" class="step-content hidden animate-fade-in">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">第三步：设计“错位”的应对反应</h3>
+                            <p class="text-gray-600 mb-6">
+                                当灾难发生时，普通人会哭，周星驰的角色会关注奇怪的细节。这就是喜剧的来源。
+                            </p>
+                            <div class="bg-gray-100 p-5 rounded-lg border-l-4 border-chow-ink">
+                                <p class="font-serif italic text-gray-700">
+                                    <span class="text-2xl text-chow-red">“</span>
+                                    比如被人拿枪指着头，正常反应是求饶。
+                                    <br>周星驰式的反应是：<br>
+                                    <strong>拿出梳子整理发型，或者问对方枪在哪里买的。</strong>
+                                    <span class="text-2xl text-chow-red">”</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-chow-ink text-white py-12 border-t-4 border-chow-red">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <h2 class="text-2xl font-serif font-bold mb-4">做人如果没有梦想，那跟咸鱼有什么分别？</h2>
+            <p class="text-gray-400 text-sm mb-8">Generated Interactive Analysis for User Research</p>
+            <div class="flex justify-center space-x-4 text-xs text-gray-500">
+                <span>© Stephen Chow Style Analysis</span>
+                <span>•</span>
+                <span>Narrative Logic</span>
+                <span>•</span>
+                <span>Character Archetypes</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Navigation Logic ---
+        function navTo(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                // Update Active State
+                document.querySelectorAll('.nav-item').forEach(btn => {
+                    btn.classList.remove('text-chow-red', 'font-bold');
+                    btn.classList.add('text-gray-600');
+                });
+                const btn = document.getElementById('btn-' + id);
+                if(btn && !btn.classList.contains('bg-chow-red')) { // Don't change the CTA button styles
+                    btn.classList.add('text-chow-red', 'font-bold');
+                    btn.classList.remove('text-gray-600');
+                }
+            }
+        }
+
+        // --- 1. Narrative Logic Chart (Chart.js) ---
+        let narrativeChartInstance = null;
+        
+        const movieData = {
+            'kungfu': {
+                label: '功夫 (Kung Fu Hustle)',
+                // X-Axis labels
+                labels: ['猪笼城寨 (Intro)', '勒索理发师 (Bullying)', '遇见包租婆 (Defeat)', '琴魔大战 (Witness)', '火云邪神 (Despair)', '被打通任督 (Rebirth)', '如来神掌 (Climax)'],
+                // Y-Axis: Status (-10 to 10)
+                status: [-5, -2, -8, -5, -10, 8, 10], 
+                // Y-Axis: Sympathy (0 to 10)
+                sympathy: [2, 1, 5, 6, 10, 8, 9],
+                descriptions: [
+                    "主角是个一事无成的小混混，地位极低。",
+                    "试图欺负比自己更弱的人，观众产生厌恶感。",
+                    "被真正的强者（包租婆）碾压，开始显得可怜。",
+                    "目睹高手过招，内心良知开始觉醒。",
+                    "被终极反派打得面目全非，悲剧感达到顶峰，观众共情拉满。",
+                    "濒死之际破茧成蝶，获得神力。",
+                    "以德报怨，成为一代宗师。"
+                ]
+            },
+            'godcook': {
+                label: '食神 (God of Cookery)',
+                labels: ['食神大赛 (Arrogance)', '遇到双刀火鸡 (Fall)', '爆浆濑尿牛丸 (Rise)', '被追杀 (Crisis)', '少林寺学艺 (Training)', '决战食神 (Showdown)', '成仙 (Transcendent)'],
+                status: [10, -5, 2, -8, 5, 8, 10],
+                sympathy: [0, 4, 6, 9, 7, 8, 5],
+                descriptions: [
+                    "开场即巅峰，但为人刻薄，观众毫无同情。",
+                    "被陷害流落街头，被丑女收留，开始接地气。",
+                    "利用商业头脑东山再起，笑料密集。",
+                    "遭遇背叛和生死危机，此时观众真正开始心疼。",
+                    "在极度痛苦中领悟厨艺真谛（黯然销魂饭）。",
+                    "依靠真本事赢回尊严。",
+                    "超现实结局，看破红尘。"
+                ]
+            },
+            'king': {
+                label: '喜剧之王 (King of Comedy)',
+                labels: ['喊Cut (Delusion)', '教人演戏 (Struggle)', '领盒饭 (Humiliation)', '爱上柳飘飘 (Romance)', '卧底行动 (Danger)', '雷雨演出 (Climax)', '街坊剧场 (Reality)'],
+                status: [-8, -6, -9, -5, -2, 0, -5],
+                sympathy: [3, 5, 9, 10, 8, 7, 10],
+                descriptions: [
+                    "自称演员，实际是干扰拍摄的死跑龙套。",
+                    "虽然可笑，但对梦想的执着让人动容。",
+                    "被吴孟达角色狠狠羞辱，尊严扫地。",
+                    "在最无能为力的时候遇上想照顾一生的人。",
+                    "意外卷入真实枪战，演技终于派上用场。",
+                    "虽然没有成为大明星，但赢得了尊重。",
+                    "回归平凡，但这才是真实的生活。"
+                ]
+            }
+        };
+
+        function initNarrativeChart() {
+            const ctx = document.getElementById('narrativeChart').getContext('2d');
+            const initialKey = 'kungfu';
+            const data = movieData[initialKey];
+
+            narrativeChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: '主角地位/能力 (Status)',
+                            data: data.status,
+                            borderColor: '#D97706', // Chow Gold
+                            backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '观众共情度 (Sympathy)',
+                            data: data.sympathy,
+                            borderColor: '#DC2626', // Chow Red
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                footer: function(tooltipItems) {
+                                    return '点击节点查看详情';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: '地位 (High/Low)' },
+                            min: -12, max: 12,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: '共情 (Sympathy)' },
+                            min: 0, max: 12,
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const currentKey = document.getElementById('movieSelect').value;
+                            const info = movieData[currentKey];
+                            
+                            const detailBox = document.getElementById('narrative-detail');
+                            const title = document.getElementById('detail-title');
+                            const text = document.getElementById('detail-text');
+                            
+                            detailBox.classList.remove('hidden');
+                            title.innerText = info.labels[index];
+                            text.innerText = info.descriptions[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateNarrativeChart() {
+            const key = document.getElementById('movieSelect').value;
+            const data = movieData[key];
+            
+            narrativeChartInstance.data.labels = data.labels;
+            narrativeChartInstance.data.datasets[0].data = data.status;
+            narrativeChartInstance.data.datasets[1].data = data.sympathy;
+            narrativeChartInstance.update();
+            
+            document.getElementById('narrative-detail').classList.add('hidden');
+        }
+
+        // --- 2. Character Grid Logic ---
+        const characters = [
+            { id: 1, type: 'protagonist', name: '自大狂小人物', desc: '明明处于社会底层，却拥有毫无根据的自信。', icon: '🤡', role: '主角', example: '尹天仇、凌凌漆' },
+            { id: 2, type: 'protagonist', name: '天才白痴', desc: '拥有绝世才能，但缺乏社会常识，极其天真。', icon: '👶', role: '主角', example: '阿星 (少林足球)' },
+            { id: 3, type: 'female', name: '审丑缪斯', desc: '外表被刻意丑化（暴牙、刀疤），内心却最纯洁。', icon: '👹', role: '女主角', example: '双刀火鸡、阿梅' },
+            { id: 4, type: 'female', name: '初恋符号', desc: '哑巴、棒棒糖、清纯。代表主角未被污染的初心。', icon: '🍭', role: '女主角', example: '哑女 (功夫)' },
+            { id: 5, type: 'sidekick', name: '猥琐大叔', desc: '好色、贪财、背叛，却又是主角唯一的伙伴。', icon: '🥸', role: '黄金配角', example: '吴孟达角色' },
+            { id: 6, type: 'sidekick', name: '世外高人', desc: '穿着拖鞋背心的秃顶老伯，往往是最强战力。', icon: '🩴', role: '关键NPC', example: '火云邪神' },
+        ];
+
+        function renderChars(filter) {
+            const container = document.getElementById('char-grid');
+            container.innerHTML = '';
+            
+            const filtered = filter === 'all' ? characters : characters.filter(c => c.type === filter);
+            
+            filtered.forEach(char => {
+                const el = document.createElement('div');
+                el.className = 'section-card p-6 border-l-4 border-chow-red hover:bg-red-50 cursor-default';
+                el.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="text-4xl mb-2">${char.icon}</div>
+                        <span class="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded">${char.role}</span>
+                    </div>
+                    <h3 class="font-bold text-lg text-chow-ink mb-2">${char.name}</h3>
+                    <p class="text-sm text-gray-600 mb-3">${char.desc}</p>
+                    <div class="text-xs text-chow-red italic border-t border-gray-100 pt-2 mt-auto">
+                        典型: ${char.example}
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+            
+            // Update buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.innerText.includes(filter === 'all' ? '全部' : 
+                   filter === 'protagonist' ? '主角' : 
+                   filter === 'female' ? '女性' : '配角')) {
+                    btn.classList.add('bg-chow-ink', 'text-white');
+                    btn.classList.remove('bg-white', 'text-gray-600');
+                } else {
+                    btn.classList.remove('bg-chow-ink', 'text-white');
+                    btn.classList.add('bg-white', 'text-gray-600');
+                }
+            });
+        }
+
+        function filterChars(type) {
+            renderChars(type);
+        }
+
+        // --- 3. Style Radar Chart ---
+        function initStyleChart() {
+            const ctx = document.getElementById('styleChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['荒诞 (Absurdity)', '悲剧 (Tragedy)', '动作 (Action)', '纯爱 (Romance)', '讽刺 (Satire)', '节奏 (Rhythm)'],
+                    datasets: [{
+                        label: '周星驰风格配比 (Chow Formula)',
+                        data: [95, 85, 70, 60, 80, 90],
+                        fill: true,
+                        backgroundColor: 'rgba(220, 38, 38, 0.2)', // Chow Red transparent
+                        borderColor: '#DC2626',
+                        pointBackgroundColor: '#D97706',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#DC2626'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.1)' },
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            pointLabels: {
+                                font: { size: 12, family: 'Arial' },
+                                color: '#1F2937'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        function highlightStyle(type) {
+            // Visual feedback function for style descriptions
+            // In a full app, this might highlight the specific axis on the chart
+            console.log("Highlighted: " + type);
+        }
+
+        // --- 4. Creation Steps Logic ---
+        function showStep(stepNum, btn) {
+            // Hide all contents
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+            // Show selected
+            document.getElementById('step-' + stepNum).classList.remove('hidden');
+            
+            // Reset tabs
+            document.querySelectorAll('.step-tab').forEach(t => {
+                t.classList.remove('text-chow-red', 'border-b-2', 'border-chow-red', 'bg-red-50');
+                t.classList.add('text-gray-500');
+            });
+            // Activate tab
+            btn.classList.remove('text-gray-500');
+            btn.classList.add('text-chow-red', 'border-b-2', 'border-chow-red', 'bg-red-50');
+        }
+
+        // Initialization
+        window.addEventListener('load', () => {
+            initNarrativeChart();
+            initStyleChart();
+            renderChars('all');
+        });
+
+    </script>
+</body>
+</html>
